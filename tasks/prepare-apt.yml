@@ -1,0 +1,92 @@
+---
+
+
+- name: Switch temporarily to system python
+  set_fact: 
+    tempPythonInterpreter: "{{ ansible_python_interpreter }}"
+- set_fact: 
+    ansible_python_interpreter: "{{ forksSystemPythonInterpreter }}"
+###
+
+- debug:
+    msg: "{{ ansible_distribution_release }}" 
+
+
+  ## Installation per apt
+
+- name: Install Docker repo key
+  when: ansible_facts['os_family'] == 'Debian'
+  become: true
+  apt_key:
+    url: "https://download.docker.com/linux/{{ ansible_distribution|lower }}/gpg"
+    state: present
+    keyring: /usr/share/keyrings/docker-archive-keyring.gpg
+
+- name: Get architecture from dpkg
+  when: ansible_facts['os_family'] == 'Debian'
+  shell: dpkg --print-architecture
+  register: dkpgArchitectureShellResult
+
+- name: Add Docker repository (Debian family)
+  when: ansible_facts['os_family'] == 'Debian'
+  become: true
+  apt_repository:
+    repo: >
+      deb [arch={{ dkpgArchitectureShellResult.stdout }} signed-by=/usr/share/keyrings/docker-archive-keyring.gpg]
+      https://download.docker.com/linux/{{ ansible_distribution|lower }}
+      {{ ansible_distribution_release }} stable
+    state: present
+    filename: docker
+
+- name: Install Docker system packages (Debian family)
+  when: ansible_facts['os_family'] == 'Debian'
+  become: true
+  apt:
+    name:
+      - containerd.io
+      - docker-ce-cli
+      - docker-ce
+      - docker-ce-rootless-extras
+
+
+- name: Install Docker system packages for rootless mode (Debian family)
+  when: 
+    - ansible_facts['os_family'] == 'Debian'
+    - forksDockerSystemUsername != ''
+  become: true
+  apt:
+    name:
+      - uidmap
+      - slirp4netns
+      - fuse-overlayfs
+
+
+- name: Install RPi extra modules (Ubuntu 21.10 RPi)
+  when:
+    - ansible_distribution == 'Ubuntu'
+    - >
+      ansible_distribution_version == '21.10'
+      or ansible_distribution_major_version > '21'
+    - "'raspi' in ansible_kernel"
+  become: true
+  apt:
+    name:
+      - linux-modules-extra-raspis
+
+###
+- name: Switch back to framework python venv
+  set_fact: 
+    ansible_python_interpreter: "{{ tempPythonInterpreter }}"
+
+
+- name: Stop and disable system docker service
+  when: forksDockerDisableSystemDocker
+  become: true
+  systemd:
+    name: docker.service
+    enabled: no
+    state: stopped
+    daemon_reload: yes
+
+
+...

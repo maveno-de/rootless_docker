@@ -1,2 +1,11 @@
 ---
-# defaults file for rootless_docker
+
+
+forksDockerInstallationOption: deb # apt|deb
+forksDockerDisableSystemDocker: true
+forksDockerNoSeccompProfile: true
+forksDockerRecursiveNameservers:
+  - '8.8.8.8'
+
+
+...

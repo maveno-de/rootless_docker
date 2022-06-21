@@ -3,7 +3,7 @@
 
   #HINT: 'anditat' matching english version 'Candidate' as well as german 'Kanditat'
 - name: Get slirp4netns version available from apt cache
-  become: yes
+  become: true
   shell: apt-cache policy slirp4netns | grep andidat | grep -Eo '[^[:blank:]]+$' | grep -Eo '^[^-]+' | cat
   register: slirp4netnsAvailableVersionShellResult
 
@@ -15,18 +15,18 @@
 
       # Latest version result: slirp4netnsSourceGithubResult.recommended_version
     - name: Determine slirp4netns latest release version
-      maveno_source_github:
+      maveno_de.forks_collection.source_github:
         owner: rootless-containers
         repo: slirp4netns
       environment:
         SSL_CERT_DIR: /etc/ssl/certs
-        REQUESTS_CA_BUNDLE: "{{ mavenoSystemCaCertificatesFilePath }}"
+        REQUESTS_CA_BUNDLE: "{{ forksSystemCaCertificatesFilePath }}"
       register: slirp4netnsSourceGithubResult
     
     - name: Download and install latest static version of slirp4netns executable
-      become: yes
+      become: true
       get_url:
-        url: "https://github.com/rootless-containers/slirp4netns/releases/download/v{{ slirp4netnsSourceGithubResult.recommended_version }}/slirp4netns-{{ slirp4NetNsArchitectureLookupTable[mavenoSystemArchitecture] }}"
+        url: "https://github.com/rootless-containers/slirp4netns/releases/download/v{{ slirp4netnsSourceGithubResult.recommended_version }}/slirp4netns-{{ slirp4NetNsArchitectureLookupTable[forksSystemArchitecture] }}"
         dest: /usr/bin/
         owner: root
         group: root
@@ -39,7 +39,7 @@
       delay: 30
 
     - name: Rename slirp4netns executable
-      become: yes
+      become: true
       shell: "mv \"{{ getUrlResult.dest }}\" /usr/bin/slirp4netns"
 
 
@@ -53,11 +53,11 @@
       set_fact: 
         tempPythonInterpreter: "{{ ansible_python_interpreter }}"
     - set_fact: 
-        ansible_python_interpreter: "{{ mavenoSystemPythonInterpreter }}"
+        ansible_python_interpreter: "{{ forksSystemPythonInterpreter }}"
     ###
     
     - name: Install latest version of slirp4netns as apt package
-      become: yes
+      become: true
       apt:
         state: latest
         pkg: slirp4netns

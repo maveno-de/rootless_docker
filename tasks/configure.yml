@@ -1,0 +1,60 @@
+---
+
+
+- name: Generate Docker daemon configuration for context system user
+  become: true
+  vars:
+    dockerDnsConfiguration:
+      dns: "{{ forksDockerRecursiveNameservers }}"
+      log-driver: json-file
+      log-opts:
+        max-size: '30m'
+        max-file: '3'
+  copy:
+    content: >-
+      {{ dockerDnsConfiguration | to_json }}
+    dest: "{{ forksComponentHomeDirectory }}/.config/docker/daemon.json"
+    owner: "{{ forksComponentSystemUsername }}"
+    group: "{{ forksComponentSystemUsername }}"
+    mode: 0644
+    force: true
+
+
+- name: Generate empty Docker profile for context system user
+  when: forksDockerNoSeccompProfile
+  become: true
+  copy:
+    content: '{}'
+    dest: "{{ forksComponentHomeDirectory }}/.config/docker/profile.json"
+    owner: "{{ forksComponentSystemUsername }}"
+    group: "{{ forksComponentSystemUsername }}"
+    mode: 0644
+    force: true
+
+- name: Path Docker user service file with option referring to empty profile
+  when: forksDockerNoSeccompProfile
+  become: true
+  replace:
+    path: >-
+      {{ forksComponentHomeDirectory }}/.config/systemd/user/docker.service
+    regexp: >-
+      ^(ExecStart=.*)$
+    replace: >-
+      \1 --seccomp-profile {{ forksComponentHomeDirectory }}/.config/docker/profile.json
+      {% if ansible_distribution == 'Debian' and ansible_distribution_major_version|int >= 11 %}
+      --exec-opt native.cgroupdriver=cgroupfs{% endif %}
+
+
+- name: Restart rootless Docker service
+  become: true
+  become_user: "{{ forksComponentSystemUsername }}"
+  remote_user: "{{ forksComponentSystemUsername }}"
+  systemd:
+    name: docker.service
+    state: restarted
+    scope: user
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ fncDockerContextUidShellResult.stdout }}"
+
+
+...

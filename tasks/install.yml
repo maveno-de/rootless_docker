@@ -1,0 +1,33 @@
+---
+
+
+- name: "Enable user services for user {{ forksDockerSystemUsername }}"
+  become: true
+  shell: "loginctl enable-linger {{ forksDockerSystemUsername }}"
+  args:
+    creates: "/var/lib/systemd/linger/{{ forksDockerSystemUsername }}"
+
+- name: Add Docker environment variables to context system user
+  vars:
+    contextBashRcFilePath: "{{ forksDockerHomeDirectory }}/.bashrc"
+    contextNonInteractiveRules:
+      - export XDG_RUNTIME_DIR=/run/user/$(id -u)
+      - export DOCKER_HOST=unix:///run/user/$(id -u)/docker.sock
+  include_role:
+    name: maveno_de.forks_collection.forks_utilities
+    tasks_from: addNonInteractiveRulesToBashRc.yml
+
+
+- name: "Install rootless docker for user {{ forksDockerSystemUsername }}"
+  become: true
+  become_user: "{{ forksDockerSystemUsername }}"
+  shell: dockerd-rootless-setuptool.sh install
+  args:
+    chdir: "{{ forksDockerHomeDirectory }}"
+    executable: /bin/bash
+  environment:
+    XDG_RUNTIME_DIR: "/run/user/{{ forkUserIdShellResult.stdout }}"
+    DOCKER_HOST: "unix:///run/user/{{ forkUserIdShellResult.stdout }}/docker.sock"    
+
+
+...
