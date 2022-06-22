@@ -10,10 +10,6 @@
     ansible_python_interpreter: "{{ forksSystemPythonInterpreter }}"
 ###
 
-- debug:
-    msg: "{{ ansible_distribution_release }}" 
-
-
   ## Installation per apt
 
 - name: Install Docker repo key
@@ -59,8 +55,6 @@
   apt:
     name:
       - uidmap
-      - slirp4netns
-      - fuse-overlayfs
 
 
 - name: Install RPi extra modules (Ubuntu 21.10 RPi)
@@ -79,6 +73,13 @@
 - name: Switch back to framework python venv
   set_fact: 
     ansible_python_interpreter: "{{ tempPythonInterpreter }}"
+
+
+- name: Install slirp4netns
+  include_tasks: installSlirp4NetNs.yml
+
+- name: Install fuse-overlayfs
+  include_tasks: installFuseOverlayFs.yml
 
 
 - name: Stop and disable system docker service

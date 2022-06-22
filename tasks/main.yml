@@ -1,2 +1,23 @@
 ---
-# tasks file for rootless_docker
+
+
+- name: Removing rootless Docker service
+  include_tasks: remove.yml
+
+- name: Install rootless Docker service
+  block:
+
+    - name: Prepare Docker service installation (common)
+      include_tasks: "prepare.yml"
+
+    - name: Prepare Docker service installation
+      include_tasks: "prepare-{{ forksDockerInstallationOption }}.yml"
+
+    - name: Install Docker service
+      include_tasks: install.yml
+
+    - name: Configure Docker service
+      include_tasks: configure.yml
+
+
+...

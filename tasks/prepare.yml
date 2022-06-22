@@ -1,0 +1,14 @@
+---
+
+
+- name: "Ensure {{ forksComponentIdentifier|capitalize }} docker config directory"
+  become: true
+  file:
+    path: "{{ forksDockerHomeDirectory }}/.config/docker"
+    state: directory
+    owner: "{{ forksDockerSystemUsername }}"
+    group: "{{ forksDockerSystemUsername }}"
+    mode: 0750
+    
+
+...

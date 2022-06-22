@@ -1,7 +1,7 @@
 ---
 
 
-forksDockerInstallationOption: deb # apt|deb
+forksDockerInstallationOption: apt # apt|deb
 forksDockerDisableSystemDocker: true
 forksDockerNoSeccompProfile: true
 forksDockerRecursiveNameservers:
