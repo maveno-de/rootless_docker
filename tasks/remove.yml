@@ -52,7 +52,7 @@
     DOCKER_HOST: "unix:///run/user/{{ forkUserIdShellResult.stdout }}/docker.sock"
   failed_when: no
 
-- name: Remove docker data for user {{ forksDockerSystemUsername }}"
+- name: "Remove docker data for user {{ forksDockerSystemUsername }}"
   become: true
   file:
     path: "{{ forksDockerHomeDirectory }}/.local/share/docker"

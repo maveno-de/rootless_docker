@@ -56,19 +56,6 @@
     name:
       - uidmap
 
-
-- name: Install RPi extra modules (Ubuntu 21.10 RPi)
-  when:
-    - ansible_distribution == 'Ubuntu'
-    - >
-      ansible_distribution_version == '21.10'
-      or ansible_distribution_major_version > '21'
-    - "'raspi' in ansible_kernel"
-  become: true
-  apt:
-    name:
-      - linux-modules-extra-raspis
-
 ###
 - name: Switch back to framework python venv
   set_fact: 
