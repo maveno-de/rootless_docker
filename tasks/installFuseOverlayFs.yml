@@ -15,7 +15,7 @@
 
       # Latest version result: fuseOverlayFsSourceGithubResult.recommended_version
     - name: Determine fuse-overlayfs latest release version
-      maveno_de.forks_collection.source_github:
+      maveno_de.forks.source_github:
         owner: containers
         repo: fuse-overlayfs
       environment:

@@ -15,7 +15,7 @@
 
       # Latest version result: slirp4netnsSourceGithubResult.recommended_version
     - name: Determine slirp4netns latest release version
-      maveno_de.forks_collection.source_github:
+      maveno_de.forks.source_github:
         owner: rootless-containers
         repo: slirp4netns
       environment:
